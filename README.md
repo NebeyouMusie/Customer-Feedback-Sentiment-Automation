@@ -127,6 +127,8 @@ Your sheet should resemble the example below.
 
 ![Customer Feedback Data](./images/Customer%20Feedback%20Data.png)
 
+You can find an example spreadsheet in the `data/` folder: `Customer Feedback.xlsx`.
+
 Recommended columns:
 
 - **Timestamp**: When the feedback was received
