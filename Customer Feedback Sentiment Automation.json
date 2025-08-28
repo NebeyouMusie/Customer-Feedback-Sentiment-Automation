@@ -1,0 +1,397 @@
+{
+  "name": "Customer Feedback Sentiment Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Customer Feedback Form",
+        "formDescription": "Please share your honest feedback with us. Your insights help us improve our products and services.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Your full name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email Address",
+              "placeholder": "Your email address (for follow-up, if needed)",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Feedback",
+              "fieldType": "textarea",
+              "placeholder": "Please provide your detailed feedback here",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        -160
+      ],
+      "id": "2d1a1372-1518-4687-8680-ba4452b8040c",
+      "name": "On form submission",
+      "webhookId": "cb095038-e689-4b5d-9c46-e39b778d1c3e"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json['Your Feedback'] }}",
+        "options": {
+          "systemPromptTemplate": "You are highly intelligent and accurate sentiment analyzer. Analyze the sentiment of the provided text. Categorize it into one of the following: {categories}. Use the provided formatting instructions. Only output the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        -176
+      ],
+      "id": "dfdac500-52b5-4a93-9aa1-06a579c8c188",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        16
+      ],
+      "id": "9ec2da30-fe11-4851-9a66-b324fea3435a",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NchtBD6sEH0vCYg4",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "nebeyoumusie@gmail.com",
+        "subject": "Urgent: Negative Customer Feedback Received — Immediate Attention Required",
+        "emailType": "text",
+        "message": "=Hello Customer Success Team,\n\nA new customer feedback with negative sentiment has been received and requires your immediate attention.\n\nCustomer Details:\nName: {{ $('On form submission').item.json.Name }}\nEmail: {{ $('On form submission').item.json['Email Address'] }}\nSubmitted On: {{ $now.format('yyyy-MM-dd HH:mm:ss') }}\n\nFeedback:\n{{ $('On form submission').item.json['Your Feedback'] }}\n\nPlease review this feedback promptly and take appropriate action to address the customer's concerns. Quick follow-up can help improve customer satisfaction and retain their loyalty.\n\nThank you for your prompt response and dedication to exceptional customer service.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        -32
+      ],
+      "id": "016e901e-41e5-40b6-9ceb-be70e07b87ac",
+      "name": "Send alert message to Customer Success",
+      "webhookId": "9ccd0d47-85a0-43f3-9d44-cc17e741c3a3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "sGGs6j9IqZ5eRl4L",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU",
+          "mode": "list",
+          "cachedResultName": "Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Address": "={{ $json['Email Address'] }}",
+            "Timestamp": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "Customer Name": "={{ $json.Name }}",
+            "Feedback Text": "={{ $json['Your Feedback'] }}",
+            "Sentiment": "={{ $json.sentimentAnalysis.category }}",
+            "Alert": "No"
+          },
+          "matchingColumns": [
+            "Email Address"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Feedback Text",
+              "displayName": "Feedback Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Alert",
+              "displayName": "Alert",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        -288
+      ],
+      "id": "2abd04ba-fbb8-4b5e-8d1a-346792d1abc4",
+      "name": "Append Customer Feedback",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "puIDvD1AGruBiW0E",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU",
+          "mode": "list",
+          "cachedResultName": "Customer Feedback",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tTu7jJuyGZv_VdXEXgIR5AYz-7bw9joFDg9q8-qNvhU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('yyyy-MM-dd HH:mm:ss') }}",
+            "Customer Name": "={{ $('On form submission').item.json.Name }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Feedback Text": "={{ $('On form submission').item.json['Your Feedback'] }}",
+            "Sentiment": "={{ $json.sentimentAnalysis.category }}",
+            "Alert": "Yes"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Feedback Text",
+              "displayName": "Feedback Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment",
+              "displayName": "Sentiment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Alert",
+              "displayName": "Alert",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        -32
+      ],
+      "id": "cd18839f-9161-4d3f-bc18-22805417e7eb",
+      "name": "Append Customer Feedback1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "puIDvD1AGruBiW0E",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Append Customer Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Customer Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Customer Feedback1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send alert message to Customer Success": {
+      "main": [
+        []
+      ]
+    },
+    "Append Customer Feedback": {
+      "main": [
+        []
+      ]
+    },
+    "Append Customer Feedback1": {
+      "main": [
+        [
+          {
+            "node": "Send alert message to Customer Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5d3be6e2-6adc-4e73-aa5a-7d24eecfe56c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "840154ca8ff3822257170e4b1910defa5b76a2ee2e5b52ef94b6628e655db31a"
+  },
+  "id": "cz99Eq1wBONp69nc",
+  "tags": []
+}
